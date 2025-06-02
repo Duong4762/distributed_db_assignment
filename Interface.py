@@ -5,11 +5,11 @@
 
 import psycopg2
 
-DATABASE_NAME = 'dds_assgn1'
+DATABASE_NAME = 'postgres'
 
 
-def getopenconnection(user='postgres', password='1234', dbname='postgres'):
-    return psycopg2.connect("dbname='" + dbname + "' user='" + user + "' host='localhost' password='" + password + "'")
+def getopenconnection(user='postgres', password='gsdfgdfberhgfsdgberh', dbname='postgres'):
+    return psycopg2.connect("dbname='" + dbname + "' user='" + user + "' host='db.affqhxooouogyttkliii.supabase.co' password='" + password + "'")
 
 
 def loadratings(ratingstablename, ratingsfilepath, openconnection): 
@@ -55,7 +55,7 @@ def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
     for i in range(0, numberofpartitions):
         table_name = RROBIN_TABLE_PREFIX + str(i)
         cur.execute("create table " + table_name + " (userid integer, movieid integer, rating float);")
-        cur.execute("insert into " + table_name + " (userid, movieid, rating) select userid, movieid, rating from (select userid, movieid, rating, ROW_NUMBER() over() as rnum from " + ratingstablename + ") as temp where mod(temp.rnum-1, 5) = " + str(i) + ";")
+        cur.execute("insert into " + table_name + " (userid, movieid, rating) select userid, movieid, rating from (select userid, movieid, rating, ROW_NUMBER() over() as rnum from " + ratingstablename + ") as temp where mod(temp.rnum-1, " + str(numberofpartitions) + ") = " + str(i) + ";")
     cur.close()
     con.commit()
 
@@ -68,7 +68,7 @@ def roundrobininsert(ratingstablename, userid, itemid, rating, openconnection):
     cur = con.cursor()
     RROBIN_TABLE_PREFIX = 'rrobin_part'
     cur.execute("insert into " + ratingstablename + "(userid, movieid, rating) values (" + str(userid) + "," + str(itemid) + "," + str(rating) + ");")
-    cur.execute("select count(*) from " + ratingstablename + ";");
+    cur.execute("select count(*) from " + ratingstablename + ";")
     total_rows = (cur.fetchall())[0][0]
     numberofpartitions = count_partitions(RROBIN_TABLE_PREFIX, openconnection)
     index = (total_rows-1) % numberofpartitions
@@ -84,6 +84,8 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
     con = openconnection
     cur = con.cursor()
     RANGE_TABLE_PREFIX = 'range_part'
+    cur.execute("insert into " + ratingstablename + "(userid, movieid, rating) values (" + str(userid) + "," + str(
+        itemid) + "," + str(rating) + ");")
     numberofpartitions = count_partitions(RANGE_TABLE_PREFIX, openconnection)
     delta = 5 / numberofpartitions
     index = int(rating / delta)

@@ -1,7 +1,7 @@
 #
 # Tester for the assignement1
 #
-DATABASE_NAME = 'dds_assgn1'
+DATABASE_NAME = 'postgres'
 
 # TODO: Change these as per your code
 RATINGS_TABLE = 'ratings'
@@ -11,7 +11,7 @@ USER_ID_COLNAME = 'userid'
 MOVIE_ID_COLNAME = 'movieid'
 RATING_COLNAME = 'rating'
 INPUT_FILE_PATH = 'test_data.dat'
-ACTUAL_ROWS_IN_INPUT_FILE = 20  # Number of lines in the input file
+ACTUAL_ROWS_IN_INPUT_FILE = 20
 
 import psycopg2
 import traceback
@@ -33,31 +33,47 @@ if __name__ == '__main__':
             else:
                 print("loadratings function fail!")
 
-            [result, e] = testHelper.testrangepartition(MyAssignment, RATINGS_TABLE, 5, conn, 0, ACTUAL_ROWS_IN_INPUT_FILE)
+            num_range_partitions = int(input("Enter number of range partitions: "))
+
+            [result, e] = testHelper.testrangepartition(MyAssignment, RATINGS_TABLE, num_range_partitions, conn, 0, ACTUAL_ROWS_IN_INPUT_FILE)
             if result :
                 print("rangepartition function pass!")
             else:
                 print("rangepartition function fail!")
 
+            userId = int(input("Enter user ID: "))
+            movieId = int(input("Enter movie ID: "))
+            rating = float(input("Enter rating (0.0 to 5.0): "))
+            tableIndex = input("Enter expected table index (e.g., '0', '1', '2', ...): ").strip()
+
             # ALERT:: Use only one at a time i.e. uncomment only one line at a time and run the script
-            [result, e] = testHelper.testrangeinsert(MyAssignment, RATINGS_TABLE, 100, 2, 3, conn, '2')
+            [result, e] = testHelper.testrangeinsert(MyAssignment, RATINGS_TABLE, userId, movieId, rating, conn, tableIndex)
             # [result, e] = testHelper.testrangeinsert(MyAssignment, RATINGS_TABLE, 100, 2, 0, conn, '0')
             if result:
                 print("rangeinsert function pass!")
             else:
                 print("rangeinsert function fail!")
 
+            input("Press any key to continue...")
+
             testHelper.deleteAllPublicTables(conn)
             MyAssignment.loadratings(RATINGS_TABLE, INPUT_FILE_PATH, conn)
 
-            [result, e] = testHelper.testroundrobinpartition(MyAssignment, RATINGS_TABLE, 5, conn, 0, ACTUAL_ROWS_IN_INPUT_FILE)
+            num_rrobin_partitions = int(input("Enter number of round robin partitions: "))
+
+            [result, e] = testHelper.testroundrobinpartition(MyAssignment, RATINGS_TABLE, num_rrobin_partitions, conn, 0, ACTUAL_ROWS_IN_INPUT_FILE)
             if result :
                 print("roundrobinpartition function pass!")
             else:
                 print("roundrobinpartition function fail")
 
+            userId = int(input("Enter user ID: "))
+            movieId = int(input("Enter movie ID: "))
+            rating = float(input("Enter rating (0.0 to 5.0): "))
+            tableIndex = input("Enter expected table index (e.g., '0', '1', '2', ...): ").strip()
+
             # ALERT:: Change the partition index according to your testing sequence.
-            [result, e] = testHelper.testroundrobininsert(MyAssignment, RATINGS_TABLE, 100, 1, 3, conn, '0')
+            [result, e] = testHelper.testroundrobininsert(MyAssignment, RATINGS_TABLE, userId, movieId, rating, conn, tableIndex)
             # [result, e] = testHelper.testroundrobininsert(MyAssignment, RATINGS_TABLE, 100, 1, 3, conn, '1')
             # [result, e] = testHelper.testroundrobininsert(MyAssignment, RATINGS_TABLE, 100, 1, 3, conn, '2')
             if result :
