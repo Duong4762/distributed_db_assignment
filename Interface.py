@@ -89,7 +89,7 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
     numberofpartitions = count_partitions(RANGE_TABLE_PREFIX, openconnection)
     delta = 5 / numberofpartitions
     index = int(rating / delta)
-    if rating % delta == 0 and index != 0:
+    if (rating % delta == 0 and index != 0) or index >= numberofpartitions:
         index = index - 1
     table_name = RANGE_TABLE_PREFIX + str(index)
     cur.execute("insert into " + table_name + "(userid, movieid, rating) values (" + str(userid) + "," + str(itemid) + "," + str(rating) + ");")
