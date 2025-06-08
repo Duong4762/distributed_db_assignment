@@ -5,18 +5,18 @@
 
 import psycopg2
 
-DATABASE_NAME = 'postgres'
+DATABASE_NAME = 'btlcsdlpt'
 
 
-def getopenconnection(user='postgres', password='gsdfgdfberhgfsdgberh', dbname='postgres'):
-    return psycopg2.connect("dbname='" + dbname + "' user='" + user + "' host='db.affqhxooouogyttkliii.supabase.co' password='" + password + "'")
+def getopenconnection(user='postgres', password='1234', dbname='postgres'):
+    return psycopg2.connect("dbname='" + dbname + "' user='" + user + "localhost" + password + "'")
 
 
 def loadratings(ratingstablename, ratingsfilepath, openconnection): 
     """
     Function to load data in @ratingsfilepath file to a table called @ratingstablename.
     """
-    create_db(DATABASE_NAME)
+    #create_db(DATABASE_NAME)
     con = openconnection
     cur = con.cursor()
     cur.execute("create table " + ratingstablename + "(userid integer, extra1 char, movieid integer, extra2 char, rating float, extra3 char, timestamp bigint);")
@@ -89,7 +89,7 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
     numberofpartitions = count_partitions(RANGE_TABLE_PREFIX, openconnection)
     delta = 5 / numberofpartitions
     index = int(rating / delta)
-    if rating % delta == 0 and index != 0:
+    if (rating % delta == 0 and index != 0) or index >= numberofpartitions:
         index = index - 1
     table_name = RANGE_TABLE_PREFIX + str(index)
     cur.execute("insert into " + table_name + "(userid, movieid, rating) values (" + str(userid) + "," + str(itemid) + "," + str(rating) + ");")
